@@ -1,9 +1,48 @@
-<mxfile host="Electron" modified="2023-11-20T15:58:38.269Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="GvLoP_AhLtra_UgL9p9m" version="22.1.2" type="device">
-  <diagram name="Seite-1" id="3IOwZRXR32pdvV_m0YMN">
-    <mxGraphModel dx="1114" dy="999" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+<mxfile host="Electron" modified="2023-11-20T17:06:44.810Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="PaxORCNByUAdyU7pXyUZ" version="22.1.2" type="device">
+  <diagram name="Journey Overview" id="3IOwZRXR32pdvV_m0YMN">
+    <mxGraphModel dx="7427" dy="6660" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
       <root>
         <mxCell id="0" />
-        <mxCell id="1" parent="0" />
+        <mxCell id="1" value="Background" parent="0" />
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-2" value="" style="orthogonalLoop=1;jettySize=auto;html=1;rounded=0;sketch=0;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=none;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;strokeWidth=6;shadow=0;elbow=vertical;endFill=0;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="50" y="50" as="sourcePoint" />
+            <mxPoint x="3250" y="50" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-3" value="" style="orthogonalLoop=1;jettySize=auto;html=1;rounded=0;sketch=0;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=none;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;strokeWidth=6;shadow=0;elbow=vertical;endFill=0;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="50" y="2250" as="sourcePoint" />
+            <mxPoint x="3250" y="2250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-4" value="" style="orthogonalLoop=1;jettySize=auto;html=1;rounded=0;sketch=0;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=none;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;strokeWidth=6;shadow=0;elbow=vertical;endFill=0;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="50" y="50" as="sourcePoint" />
+            <mxPoint x="50" y="2250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-5" value="" style="orthogonalLoop=1;jettySize=auto;html=1;rounded=0;sketch=0;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=none;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;strokeWidth=6;shadow=0;elbow=vertical;endFill=0;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="3250" y="50" as="sourcePoint" />
+            <mxPoint x="3250" y="2250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-6" value="Design of Transformation &amp;amp; Change Journeys, Alexander Kempkens 2023&lt;br style=&quot;font-size: 12px;&quot;&gt;Designed by Think Network GmbH, Germany&lt;br style=&quot;font-size: 12px;&quot;&gt;Creative Commons 4.0, Attribution-NonCommercial-ShareAlike" style="text;strokeColor=none;fillColor=none;html=1;align=right;verticalAlign=top;whiteSpace=wrap;rounded=0;sketch=1;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=12;textOpacity=80;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="2801" y="2254" width="450" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-7" value="published also at GRADO.group" style="text;strokeColor=none;fillColor=none;html=1;align=right;verticalAlign=top;whiteSpace=wrap;rounded=0;sketch=1;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=10;textOpacity=80;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="3100" y="2306" width="151" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-8" value="&lt;a href=&quot;https://www.thinknetwork.com/alex-kempkens/&quot;&gt;Alexander Kempkens&lt;/a&gt;&amp;nbsp;@ THINKNETWORK.com" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;sketch=1;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="2801" y="2308" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="_2SgA2-SoOkLhTVM3puv-9" value="" style="orthogonalLoop=1;jettySize=auto;html=1;rounded=0;sketch=0;hachureGap=4;jiggle=2;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fontSize=16;endArrow=none;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;strokeWidth=6;shadow=0;elbow=vertical;endFill=0;" edge="1" parent="1">
+          <mxGeometry width="120" relative="1" as="geometry">
+            <mxPoint x="50" y="170" as="sourcePoint" />
+            <mxPoint x="3250" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
