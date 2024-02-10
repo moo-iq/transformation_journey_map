@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-12-07T07:09:32.280Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1.2 Safari/605.1.15" etag="FF3VJiO9LOv-LzP2nq7e" version="22.1.7" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2024-02-10T08:45:40.289Z" agent="Mozilla/5.0 (iPad; CPU OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Mobile/15E148 Safari/604.1" etag="-T7XrY7wQOuKiZg1_jMV" version="23.1.2" type="github" pages="2">
   <diagram name="Journey Overview" id="3IOwZRXR32pdvV_m0YMN">
-    <mxGraphModel dx="1747" dy="957" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+    <mxGraphModel dx="1702" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" value="Background" parent="0" />
@@ -42,6 +42,9 @@
             <mxPoint x="50" y="170" as="sourcePoint" />
             <mxPoint x="3250" y="170" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="fx11m5ABlb6n7SpZ2BcP-1" value="Mind the gap" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0.01;dx=167.38;notch=0;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="160" y="880" width="1000" height="400" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
