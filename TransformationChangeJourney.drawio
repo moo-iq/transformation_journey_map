@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-03-13T22:10:02.466Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15" etag="ziGb9oF5vcz9s2tRt1Hl" version="24.0.6" type="github" pages="4">
+<mxfile host="app.diagrams.net" modified="2024-03-13T22:13:40.906Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15" etag="iWam3XyreYtxdf8P9ynI" version="24.0.6" type="github" pages="4">
   <diagram name="Transformation Journey" id="3IOwZRXR32pdvV_m0YMN">
     <mxGraphModel dx="1818" dy="1091" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" background="#EDEDED" math="0" shadow="0">
       <root>
@@ -2155,42 +2155,42 @@
           </mxCell>
         </object>
         <object label="Stacy Info" id="62VNBGwSXOGF1cXcoQrF-20">
-          <mxCell style="" parent="62VNBGwSXOGF1cXcoQrF-0" visible="0" />
+          <mxCell style="locked=1;" parent="62VNBGwSXOGF1cXcoQrF-0" />
         </object>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.509;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.509;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;strokeColor=#CCCC00;strokeWidth=10;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=none;fillColor=#e3c800;" parent="62VNBGwSXOGF1cXcoQrF-20" source="62VNBGwSXOGF1cXcoQrF-22" target="62VNBGwSXOGF1cXcoQrF-23" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="370" y="500" />
-              <mxPoint x="370" y="500" />
+              <mxPoint x="395" y="1010" />
+              <mxPoint x="395" y="1010" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-22" value="&lt;b&gt;&lt;u&gt;Understanding of complexity&lt;/u&gt;&lt;/b&gt;&lt;br style=&quot;border-color: var(--border-color); font-size: 20px;&quot;&gt;&lt;ol style=&quot;border-color: var(--border-color); font-size: 20px;&quot;&gt;&lt;li style=&quot;border-color: var(--border-color); font-size: 20px;&quot;&gt;Brainstorm and answer the complexity questions&lt;/li&gt;&lt;li style=&quot;border-color: var(--border-color); font-size: 20px;&quot;&gt;Place the answers on the Stacy matrix in the fitting are&lt;/li&gt;&lt;li style=&quot;border-color: var(--border-color); font-size: 20px;&quot;&gt;Clusters of answers guide you what methods or techniques are important&lt;/li&gt;&lt;/ol&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#ffffff;strokeColor=#CCCC00;strokeWidth=10;gradientColor=none;spacingTop=12;fontFamily=Verdana;fontSize=20;align=left;spacing=16;" parent="62VNBGwSXOGF1cXcoQrF-20" vertex="1">
-          <mxGeometry x="75" y="190" width="540" height="230" as="geometry" />
+          <mxGeometry x="100" y="700" width="540" height="230" as="geometry" />
         </mxCell>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-23" value="&lt;u style=&quot;font-weight: bold;&quot;&gt;Stacy Matrix structure&lt;/u&gt;&lt;br&gt;&lt;b&gt;&lt;i&gt;Y-Axis: What are we going to do?&lt;br&gt;&lt;/i&gt;&lt;/b&gt;And how much clarity or ambiguity we have in the activities&lt;br&gt;&lt;br&gt;&lt;b style=&quot;border-color: var(--border-color);&quot;&gt;&lt;i style=&quot;border-color: var(--border-color);&quot;&gt;X-Axis: How are we going to do it?&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;/i&gt;&lt;/b&gt;And how much certainty we do have in required technology or methods to execute our activities" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fontFamily=Verdana;align=left;verticalAlign=top;fillColor=#ffffff;strokeColor=#ff9933;strokeWidth=10;gradientColor=none;spacingTop=12;spacing=16;" parent="62VNBGwSXOGF1cXcoQrF-20" vertex="1">
-          <mxGeometry x="75" y="460" width="540" height="240" as="geometry" />
+          <mxGeometry x="100" y="970" width="540" height="240" as="geometry" />
         </mxCell>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#FF9933;strokeWidth=10;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=none;fillColor=#e3c800;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="62VNBGwSXOGF1cXcoQrF-20" source="62VNBGwSXOGF1cXcoQrF-23" target="62VNBGwSXOGF1cXcoQrF-26" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="364.78" y="810" as="sourcePoint" />
-            <mxPoint x="340" y="835" as="targetPoint" />
+            <mxPoint x="389.78" y="1320" as="sourcePoint" />
+            <mxPoint x="365" y="1345" as="targetPoint" />
             <Array as="points" />
           </mxGeometry>
         </mxCell>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#4D9900;strokeWidth=10;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=none;fillColor=#e3c800;" parent="62VNBGwSXOGF1cXcoQrF-20" source="62VNBGwSXOGF1cXcoQrF-26" target="62VNBGwSXOGF1cXcoQrF-27" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="370" y="1000" />
-              <mxPoint x="370" y="1000" />
+              <mxPoint x="395" y="1510" />
+              <mxPoint x="395" y="1510" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-26" value="&lt;b style=&quot;text-decoration: underline;&quot;&gt;Change flow plan&lt;/b&gt;&lt;br&gt;Your change flow intends to bring topics from chaos to simple.&lt;br&gt;As more complex topics are, as more experiments and fast feedback loops are effective to find the right approach.&lt;br&gt;For complicated topics an incremental improvement is used often." style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;verticalAlign=top;fillColor=#ffffff;strokeColor=#4D9900;strokeWidth=10;gradientColor=none;spacingTop=12;fontSize=20;fontColor=#000000;align=left;spacing=16;" parent="62VNBGwSXOGF1cXcoQrF-20" vertex="1">
-          <mxGeometry x="75" y="740" width="540" height="240" as="geometry" />
+          <mxGeometry x="100" y="1250" width="540" height="240" as="geometry" />
         </mxCell>
         <mxCell id="62VNBGwSXOGF1cXcoQrF-27" value="&lt;u style=&quot;border-color: var(--border-color); font-weight: bold;&quot;&gt;Communication flow plan&lt;/u&gt;&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;Your communication intents to guide the travelers. You can use the matrix to foresee the upcoming next steps" style="rounded=1;whiteSpace=wrap;html=1;fontSize=20;fontFamily=Verdana;verticalAlign=top;fillColor=#ffffff;strokeColor=#7f01ff;strokeWidth=10;gradientColor=none;spacingTop=12;align=left;spacing=16;" parent="62VNBGwSXOGF1cXcoQrF-20" vertex="1">
-          <mxGeometry x="75" y="1020" width="540" height="170" as="geometry" />
+          <mxGeometry x="100" y="1530" width="540" height="170" as="geometry" />
         </mxCell>
         <object label="Stacy-Cynefin" id="62VNBGwSXOGF1cXcoQrF-5">
           <mxCell style="locked=1;" parent="62VNBGwSXOGF1cXcoQrF-0" />
