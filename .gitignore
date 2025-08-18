@@ -1,3 +1,5 @@
-
 *.bkp
 .DS_Store
+/.idea/
+/.venv/
+/GEMINI.md
