@@ -3,8 +3,9 @@
 import xml.etree.ElementTree as ET
 import csv
 import os
+import requests
 from typing import Dict, Iterable, Iterator, Optional
-from .exceptions import DrawioParseError, CsvWriteError
+from .exceptions import DrawioParseError, CsvWriteError, TranslationError
 
 
 class DrawioParser:
@@ -253,3 +254,69 @@ class TranslationService:
         """
         # This is a placeholder for the actual translation logic
         return f"Translating {file_path}"
+
+
+class DeepLTranslator:
+    """Translator using DeepL API."""
+
+    def __init__(self, api_key: str):
+        """
+        Initialize the DeepL translator.
+
+        Args:
+            api_key: DeepL API key.
+        """
+        self.api_key = api_key
+        self.base_url = "https://api-free.deepl.com/v2/translate"
+
+    def translate_text(self, text: str, source_lang: str = 'EN', 
+                      target_lang: str = 'DE') -> str:
+        """
+        Translate text using DeepL API.
+
+        Args:
+            text: Text to translate.
+            source_lang: Source language code (e.g., 'EN').
+            target_lang: Target language code (e.g., 'DE').
+
+        Returns:
+            Translated text.
+
+        Raises:
+            TranslationError: If translation fails.
+        """
+        if not text.strip():
+            return text
+
+        try:
+            response = requests.post(
+                self.base_url,
+                data={
+                    'auth_key': self.api_key,
+                    'text': text,
+                    'source_lang': source_lang,
+                    'target_lang': target_lang
+                },
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                if 'translations' in result and result['translations']:
+                    return result['translations'][0]['text']
+                else:
+                    raise TranslationError("No translation returned from DeepL API")
+            else:
+                error_msg = f"DeepL API error: {response.status_code}"
+                try:
+                    error_data = response.json()
+                    if 'message' in error_data:
+                        error_msg += f" - {error_data['message']}"
+                except ValueError:
+                    error_msg += f" - {response.text}"
+                raise TranslationError(error_msg)
+
+        except requests.exceptions.RequestException as e:
+            raise TranslationError(f"Network error calling DeepL API: {e}") from e
+        except Exception as e:
+            raise TranslationError(f"Unexpected error during translation: {e}") from e

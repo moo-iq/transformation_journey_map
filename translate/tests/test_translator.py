@@ -9,6 +9,7 @@ from ..core import DrawioParser, LabelCsvWriter, TranslationService
 from ..config import Config
 from ..exceptions import DrawioParseError, ConfigurationError
 from .. import extract_labels, translate_csv, show_help
+import unittest.mock
 
 
 class TestDrawioParser(unittest.TestCase):
@@ -81,6 +82,85 @@ class TestDrawioParser(unittest.TestCase):
             self.assertEqual(objects[1]['label'], 'Test Text 2')
         finally:
             os.unlink(temp_file)
+
+
+class TestDeepLTranslation(unittest.TestCase):
+    """Test cases for DeepL API translation functionality."""
+
+    def setUp(self):
+        self.test_text = "Hello, world!"
+        self.expected_translation = "Hallo, Welt!"
+        self.api_key = "test-api-key"
+
+    @unittest.mock.patch('requests.post')
+    def test_deepl_translation_success(self, mock_post):
+        """Test successful DeepL translation."""
+        # Mock the DeepL API response
+        mock_response = unittest.mock.Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'translations': [
+                {
+                    'detected_source_language': 'EN',
+                    'text': self.expected_translation
+                }
+            ]
+        }
+        mock_post.return_value = mock_response
+
+        # Import here to avoid import errors if deepl module doesn't exist
+        from ..core import DeepLTranslator
+        
+        translator = DeepLTranslator(self.api_key)
+        result = translator.translate_text(
+            self.test_text, 
+            source_lang='EN', 
+            target_lang='DE'
+        )
+        
+        self.assertEqual(result, self.expected_translation)
+        mock_post.assert_called_once()
+
+    @unittest.mock.patch('requests.post')
+    def test_deepl_translation_api_error(self, mock_post):
+        """Test DeepL translation with API error."""
+        # Mock API error response
+        mock_response = unittest.mock.Mock()
+        mock_response.status_code = 403
+        mock_response.json.return_value = {
+            'message': 'Invalid API key'
+        }
+        mock_post.return_value = mock_response
+
+        from ..core import DeepLTranslator
+        from ..exceptions import TranslationError
+        
+        translator = DeepLTranslator(self.api_key)
+        
+        with self.assertRaises(TranslationError):
+            translator.translate_text(
+                self.test_text, 
+                source_lang='EN', 
+                target_lang='DE'
+            )
+
+    @unittest.mock.patch('requests.post')
+    def test_deepl_translation_network_error(self, mock_post):
+        """Test DeepL translation with network error."""
+        # Mock network error
+        mock_post.side_effect = Exception("Network error")
+
+        from ..core import DeepLTranslator
+        from ..exceptions import TranslationError
+        
+        translator = DeepLTranslator(self.api_key)
+        
+        with self.assertRaises(TranslationError):
+            translator.translate_text(
+                self.test_text, 
+                source_lang='EN', 
+                target_lang='DE'
+            )
 
 
 class TestLabelCsvWriter(unittest.TestCase):

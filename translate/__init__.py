@@ -20,7 +20,7 @@ Main components:
 - Config: Configuration management
 """
 
-from .core import DrawioParser, LabelCsvWriter, TranslationService
+from .core import DrawioParser, LabelCsvWriter, TranslationService, DeepLTranslator
 from .config import Config
 from .exceptions import (
     TranslationError, DrawioParseError, CsvWriteError, ConfigurationError
@@ -37,6 +37,7 @@ __all__ = [
     'DrawioParser',
     'LabelCsvWriter',
     'TranslationService',
+    'DeepLTranslator',
     'Config',
 
     # Exceptions

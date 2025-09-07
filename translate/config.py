@@ -31,6 +31,11 @@ class Config:
         """Get the source language for translation."""
         return os.getenv('language_source', 'en')
 
+    @property
+    def deepl_api_key(self) -> Optional[str]:
+        """Get the DeepL API key."""
+        return os.getenv('deepl_api')
+
     def set_target_language(self, language: str) -> None:
         """
         Set the target language.
