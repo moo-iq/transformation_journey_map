@@ -3,11 +3,8 @@
 import xml.etree.ElementTree as ET
 import csv
 import os
-import time
-import tempfile
 import requests
-from tqdm import tqdm
-from typing import Dict, Iterable, Iterator, Optional
+from typing import Dict, Iterable, Iterator, List, Optional
 from .exceptions import ConfigurationError, CsvWriteError, DrawioParseError, TranslationError
 
 
@@ -44,6 +41,93 @@ class DrawioParser:
             raise DrawioParseError(
                 f"Unexpected error reading file {self.file_path}: {e}"
             ) from e
+
+    @staticmethod
+    def _is_valid_label(value: str) -> bool:
+        """Check if a cell value is a valid, translatable label."""
+        value = value.strip()
+        return (
+            len(value) > 1 and
+            not value.startswith('data:') and
+            not value.startswith('shape=') and
+            value not in ('-', '=')
+        )
+
+    def update_labels(self, translations: Dict[str, str], target_language: str) -> int:
+        """
+        Update labels in the XML tree from a dictionary of translations.
+
+        This method adds a 'label_<lang>' attribute with the translated text.
+        For mxCell elements, it wraps them in a new <object> tag, moving the
+        id and value to the new object's attributes.
+        Args:
+            translations: A dictionary mapping element IDs to translated text.
+            target_language: The target language code (e.g., 'de').
+
+        Returns:
+            The number of updated elements.
+        """
+        if not self._root:
+            raise DrawioParseError("File not properly parsed")
+
+        updated_count = 0
+        target_attr = f'label_{target_language}'
+
+        # Create a parent map to allow modifying the tree while iterating
+        parent_map = {c: p for p in self._root.iter() for c in p}
+
+        # Find all elements with an ID that needs translation.
+        # We iterate over a copy, as we'll be modifying the tree.
+        elements_to_process = [
+            elem for elem in self._root.iter() if elem.get('id') in translations
+        ]
+
+        for element in elements_to_process:
+            element_id = element.get('id')
+            # The element might have been processed already (e.g. moved)
+            if element_id is None or element_id not in translations:
+                continue
+
+            translated_text = translations[element_id]
+
+            if element.tag == 'object':
+                # For existing objects, just add the new label attribute
+                element.set(target_attr, translated_text)
+                updated_count += 1
+
+            elif element.tag == 'mxCell':
+                # For mxCells, wrap them in a new <object> element
+                parent = parent_map.get(element)
+                if parent is None:
+                    continue  # Should not happen for valid files
+
+                original_value = element.get('value', '')
+
+                # Create the new <object> element and set its attributes
+                new_object = ET.Element('object')
+                new_object.set('id', element_id)
+                new_object.set('label', original_value)
+                new_object.set(target_attr, translated_text)
+
+                # The mxCell no longer needs id and value
+                del element.attrib['id']
+                if 'value' in element.attrib:
+                    del element.attrib['value']
+
+                # Replace the mxCell with the new object in the tree
+                index = list(parent).index(element)
+                parent.remove(element)
+                new_object.append(element)
+                parent.insert(index, new_object)
+                parent_map[element] = new_object  # Update parent map for moved element
+                updated_count += 1
+
+        return updated_count
+
+    def save(self, output_path: str) -> None:
+        """Save the modified XML tree to a file."""
+        if self._tree:
+            self._tree.write(output_path, encoding='utf-8', xml_declaration=True)
 
     def get_labeled_objects(self, target_language: str) -> Iterator[Dict[str, str]]:
         """
@@ -88,11 +172,7 @@ class DrawioParser:
             value = cell.get('value', '').strip()
 
             # Skip empty values, single characters, and non-text elements
-            if (value and cell_id and cell_id not in seen_ids and
-                len(value) > 1 and not value.startswith('data:') and
-                not value.startswith('shape=') and value != '-' and
-                value != '='):
-
+            if value and cell_id and cell_id not in seen_ids and self._is_valid_label(value):
                 seen_ids.add(cell_id)
                 yield {
                     'id': cell_id,
@@ -107,33 +187,7 @@ class DrawioParser:
         Returns:
             The number of text elements found in the file.
         """
-        if not self._root:
-            return 0
-
-        count = 0
-        seen_ids = set()
-
-        # Count <object> elements with 'label' attributes
-        for obj in self._root.findall('.//object'):
-            obj_id = obj.get('id')
-            label = obj.get('label')
-            if label and obj_id and obj_id not in seen_ids:
-                seen_ids.add(obj_id)
-                count += 1
-
-        # Count <mxCell> elements with 'value' attributes containing text
-        for cell in self._root.findall('.//mxCell'):
-            cell_id = cell.get('id')
-            value = cell.get('value', '').strip()
-
-            if (value and cell_id and cell_id not in seen_ids and
-                len(value) > 1 and not value.startswith('data:') and
-                not value.startswith('shape=') and value != '-' and
-                value != '='):
-                seen_ids.add(cell_id)
-                count += 1
-
-        return count
+        return sum(1 for _ in self.get_labeled_objects(''))
 
 
 class LabelCsvWriter:
@@ -245,20 +299,55 @@ class TranslationService:
 
         return f"Extracted labels from {file_path} to {output_file}"
 
+    def import_translations(self, csv_file_path: str, drawio_file_path: str) -> str:
+        """
+        Import translations from a CSV file back into a .drawio file.
+
+        Args:
+            csv_file_path: Path to the CSV file containing translations.
+            drawio_file_path: Path to the .drawio file to be updated.
+
+        Returns:
+            A success message with the count of imported translations.
+        """
+        target_lang = self.config.target_language
+        target_header = f'label_{target_lang}'
+        translations = {}
+
+        try:
+            with open(csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                if target_header not in reader.fieldnames:
+                    raise CsvWriteError(
+                        f"Target language column '{target_header}' not found in {csv_file_path}"
+                    )
+                for row in reader:
+                    if row.get(target_header):
+                        translations[row['id']] = row[target_header]
+        except FileNotFoundError:
+            raise CsvWriteError(f"CSV file not found: {csv_file_path}")
+
+        parser = DrawioParser(drawio_file_path)
+        updated_count = parser.update_labels(translations, target_lang)
+        
+        # Save the changes back to the original .drawio file
+        parser.save(drawio_file_path)
+
+        return f"Successfully imported {updated_count} translations into {drawio_file_path}"
+
     def translate_csv(self, file_path: str) -> str:
         """
-        Translate a CSV file using the DeepL API, with progress bar and rate limiting.
+        Translate a CSV file using the DeepL API.
 
-        This method reads a CSV file row-by-row, translates rows where the 'label' column
-        is filled but the 'label_<target_lang>' column is empty. It writes results
-        incrementally to a temporary file to prevent data loss. A 1-second delay
-        is added after each API call to avoid rate-limiting.
+        This method reads a CSV file, translates the 'label' column,
+        and writes the translation to the 'label_<target_lang>' column,
+        overwriting the original file.
 
         Args:
             file_path: Path to the CSV file to translate.
 
         Returns:
-            A success message with the count of translated and skipped labels.
+            Success message with the count of translated labels.
 
         Raises:
             ConfigurationError: If the DeepL API key is not configured.
@@ -271,83 +360,58 @@ class TranslationService:
                 "DeepL API key not found. Please set DEEPL_API_KEY."
             )
 
-        # Use pro_api=True if you have a Pro key
-        translator = DeepLTranslator(api_key, pro_api=False)
+        translator = DeepLTranslator(api_key)
         target_lang = self.config.target_language
         source_lang = self.config.source_language
         target_header = f'label_{target_lang}'
 
-        # Use a temporary file to write results incrementally
-        temp_fd, temp_path = tempfile.mkstemp(suffix=".csv", text=True)
-        os.close(temp_fd)
-
         try:
-            with open(file_path, 'r', newline='', encoding='utf-8') as csvfile, \
-                 open(temp_path, 'w', newline='', encoding='utf-8') as temp_csvfile:
-
+            with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 original_fieldnames = reader.fieldnames
                 if not original_fieldnames:
                     return "CSV file is empty. Nothing to translate."
-
-                new_fieldnames = original_fieldnames[:]
-                if target_header not in new_fieldnames:
-                    new_fieldnames.append(target_header)
-
-                writer = csv.DictWriter(temp_csvfile, fieldnames=new_fieldnames, restval='')
-                writer.writeheader()
-
-                # Convert reader to list to get total for progress bar
                 rows = list(reader)
-                translated_count = 0
-                skipped_count = 0
+        except FileNotFoundError as e:
+            raise CsvWriteError(f"File not found: {file_path}") from e
+        except Exception as e:
+            raise CsvWriteError(f"Error reading CSV file {file_path}: {e}") from e
 
-                with tqdm(total=len(rows), desc="Translating CSV", unit="row") as pbar:
-                    for row in rows:
-                        text_to_translate = row.get('label', '').strip()
-                        existing_translation = row.get(target_header, '').strip()
+        translated_count = 0
+        for row in rows:
+            if text_to_translate := row.get('label', ''):
+                row[target_header] = translator.translate_text(
+                    text_to_translate, source_lang=source_lang, target_lang=target_lang
+                )
+                translated_count += 1
 
-                        if text_to_translate and not existing_translation:
-                            # Translate if source text exists and target is empty
-                            row[target_header] = translator.translate_text(
-                                text_to_translate, source_lang=source_lang, target_lang=target_lang
-                            )
-                            translated_count += 1
-                            time.sleep(1)  # Wait for 1 second to avoid rate limiting
-                        elif text_to_translate and existing_translation:
-                            skipped_count += 1
+        new_fieldnames = original_fieldnames[:]
+        if target_header not in new_fieldnames:
+            new_fieldnames.append(target_header)
 
-                        writer.writerow(row)
-                        pbar.set_postfix({
-                            'translated': translated_count,
-                            'skipped': skipped_count
-                        })
-                        pbar.update(1)
+        try:
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=new_fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+        except IOError as e:
+            raise CsvWriteError(f"Error writing to CSV file {file_path}: {e}") from e
 
-        except (Exception, KeyboardInterrupt) as e:
-            os.remove(temp_path)  # Clean up temp file on error
-            raise e
-
-        # On success, replace the original file with the new one
-        os.replace(temp_path, file_path)
-
-        return f"Translation complete. Translated: {translated_count}, Skipped: {skipped_count}."
+        return f"Successfully translated {translated_count} labels in {file_path}"
 
 
 class DeepLTranslator:
     """Translator using DeepL API."""
 
-    def __init__(self, api_key: str, pro_api: bool = False):
+    def __init__(self, api_key: str):
         """
         Initialize the DeepL translator.
 
         Args:
             api_key: DeepL API key.
-            pro_api: If True, use the Pro API endpoint. Defaults to False.
         """
         self.api_key = api_key
-        self.base_url = "https://api.deepl.com/v2/translate" if pro_api \
-            else "https://api-free.deepl.com/v2/translate"
+        self.base_url = "https://api-free.deepl.com/v2/translate"
 
     def translate_text(self, text: str, source_lang: str = 'EN', 
                       target_lang: str = 'DE') -> str:
@@ -378,7 +442,7 @@ class DeepLTranslator:
                     'source_lang': source_lang,
                     'target_lang': target_lang
                 },
-                timeout=15
+                timeout=30
             )
 
             if response.status_code == 200:

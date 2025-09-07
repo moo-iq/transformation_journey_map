@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, Mock
 import os
 import csv
+import xml.etree.ElementTree as ET
 import tempfile
 
 from ..core import DrawioParser, LabelCsvWriter, TranslationService, DeepLTranslator
@@ -239,6 +240,60 @@ class TestTranslationService(unittest.TestCase):
         result = self.service.extract_labels(self.drawio_file, self.csv_file)
         self.assertIn("Extracted labels", result)
         self.assertTrue(os.path.exists(self.csv_file))
+
+    def test_import_translations(self):
+        """Test importing translations back into a .drawio file."""
+        # 1. Create a dummy .drawio file
+        drawio_content = """<?xml version="1.0" encoding="UTF-8"?>
+<mxfile><diagram><mxGraphModel><root>
+    <mxCell id="1" value="Hello"/>
+    <object id="2" label="World"/>
+    <mxCell id="3" value="No translation for this"/>
+</root></mxGraphModel></diagram></mxfile>"""
+        with open(self.drawio_file, 'w', encoding='utf-8') as f:
+            f.write(drawio_content)
+
+        # 2. Create a dummy CSV with translations
+        csv_content = (
+            "id,label,label_de\n"
+            "1,Hello,Hallo\n"
+            "2,World,Welt\n"
+        )
+        with open(self.csv_file, 'w', encoding='utf-8', newline='') as f:
+            f.write(csv_content)
+
+        # 3. Run the import service
+        with patch.object(self.config, 'target_language', 'de'):
+            result = self.service.import_translations(self.csv_file, self.drawio_file)
+            self.assertIn("Successfully imported 2 translations", result)
+
+        # 4. Verify the .drawio file was updated
+        tree = ET.parse(self.drawio_file)
+        root = tree.getroot()
+        
+        # Find the new object for the translated mxCell
+        new_obj1 = root.find(".//*[@id='1']")
+        self.assertIsNotNone(new_obj1)
+        self.assertEqual(new_obj1.tag, 'object')
+        self.assertEqual(new_obj1.get('label'), 'Hello')
+        self.assertEqual(new_obj1.get('label_de'), 'Hallo')
+
+        # Check that the original mxCell is now inside the object and has no id/value
+        original_cell1 = new_obj1.find('mxCell')
+        self.assertIsNotNone(original_cell1)
+        self.assertIsNone(original_cell1.get('id'))
+        self.assertIsNone(original_cell1.get('value'))
+
+        # Check the existing object
+        obj2 = root.find(".//*[@id='2']")
+        self.assertIsNotNone(obj2)
+        self.assertEqual(obj2.get('label'), 'World')
+        self.assertEqual(obj2.get('label_de'), 'Welt')
+
+        # Check the untranslated cell
+        cell3 = root.find(".//*[@id='3']")
+        self.assertIsNotNone(cell3)
+        self.assertEqual(cell3.get('value'), 'No translation for this') # Should be unchanged
 
     @patch('translate.core.tqdm')
     @patch('translate.core.DeepLTranslator')

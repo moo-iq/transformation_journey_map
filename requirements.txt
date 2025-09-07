@@ -1,3 +1,13 @@
-pandas
-deepl
+certifi
+charset-normalizer
+idna
+iniconfig
+packaging
+pluggy
+Pygments
+pytest
 python-dotenv
+requests
+tqdm
+typing
+urllib3

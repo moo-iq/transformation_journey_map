@@ -20,6 +20,7 @@ def create_parser() -> argparse.ArgumentParser:
 Examples:
   %(prog)s extract_labels diagram.drawio labels.csv --target-lang de
   %(prog)s translate labels.csv --source-lang en --target-lang de
+  %(prog)s import_translations labels.csv diagram.drawio --target-lang de
         """
     )
 
@@ -66,6 +67,25 @@ Examples:
         help='Target language code (default: de)'
     )
 
+    # Import translations command
+    import_parser = subparsers.add_parser(
+        'import_translations',
+        help='Import translated labels from CSV back into a .drawio file'
+    )
+    import_parser.add_argument(
+        'csv_file',
+        help='Path to the CSV file with translations'
+    )
+    import_parser.add_argument(
+        'drawio_file',
+        help='Path to the .drawio file to update'
+    )
+    import_parser.add_argument(
+        '--target-lang',
+        default='de',
+        help='Target language of the translations to import (default: de)'
+    )
+
     return parser
 
 
@@ -93,6 +113,10 @@ def main() -> None:
 
         elif args.command == 'translate':
             result = service.translate_csv(args.csv_file)
+            print(f"✓ {result}")
+
+        elif args.command == 'import_translations':
+            result = service.import_translations(args.csv_file, args.drawio_file)
             print(f"✓ {result}")
 
     except (TranslationError, ConfigurationError) as e:
