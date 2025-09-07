@@ -5,4 +5,5 @@
 /.idea/
 /.venv/
 /.vscode/
+__pycache__/
 /GEMINI.md
