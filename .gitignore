@@ -1,5 +1,8 @@
 *.bkp
+*.csv
 .DS_Store
+/.env
 /.idea/
 /.venv/
+/.vscode/
 /GEMINI.md
