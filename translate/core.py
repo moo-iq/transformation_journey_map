@@ -3,9 +3,12 @@
 import xml.etree.ElementTree as ET
 import csv
 import os
+import time
+import tempfile
 import requests
+from tqdm import tqdm
 from typing import Dict, Iterable, Iterator, Optional
-from .exceptions import DrawioParseError, CsvWriteError, TranslationError
+from .exceptions import ConfigurationError, CsvWriteError, DrawioParseError, TranslationError
 
 
 class DrawioParser:
@@ -244,30 +247,107 @@ class TranslationService:
 
     def translate_csv(self, file_path: str) -> str:
         """
-        Translate a CSV file using a translation service.
+        Translate a CSV file using the DeepL API, with progress bar and rate limiting.
+
+        This method reads a CSV file row-by-row, translates rows where the 'label' column
+        is filled but the 'label_<target_lang>' column is empty. It writes results
+        incrementally to a temporary file to prevent data loss. A 1-second delay
+        is added after each API call to avoid rate-limiting.
 
         Args:
             file_path: Path to the CSV file to translate.
 
         Returns:
-            Success message.
+            A success message with the count of translated and skipped labels.
+
+        Raises:
+            ConfigurationError: If the DeepL API key is not configured.
+            CsvWriteError: If there are issues reading or writing the CSV file.
+            TranslationError: If the translation API call fails.
         """
-        # This is a placeholder for the actual translation logic
-        return f"Translating {file_path}"
+        api_key = self.config.deepl_api_key
+        if not api_key:
+            raise ConfigurationError(
+                "DeepL API key not found. Please set DEEPL_API_KEY."
+            )
+
+        # Use pro_api=True if you have a Pro key
+        translator = DeepLTranslator(api_key, pro_api=False)
+        target_lang = self.config.target_language
+        source_lang = self.config.source_language
+        target_header = f'label_{target_lang}'
+
+        # Use a temporary file to write results incrementally
+        temp_fd, temp_path = tempfile.mkstemp(suffix=".csv", text=True)
+        os.close(temp_fd)
+
+        try:
+            with open(file_path, 'r', newline='', encoding='utf-8') as csvfile, \
+                 open(temp_path, 'w', newline='', encoding='utf-8') as temp_csvfile:
+
+                reader = csv.DictReader(csvfile)
+                original_fieldnames = reader.fieldnames
+                if not original_fieldnames:
+                    return "CSV file is empty. Nothing to translate."
+
+                new_fieldnames = original_fieldnames[:]
+                if target_header not in new_fieldnames:
+                    new_fieldnames.append(target_header)
+
+                writer = csv.DictWriter(temp_csvfile, fieldnames=new_fieldnames, restval='')
+                writer.writeheader()
+
+                # Convert reader to list to get total for progress bar
+                rows = list(reader)
+                translated_count = 0
+                skipped_count = 0
+
+                with tqdm(total=len(rows), desc="Translating CSV", unit="row") as pbar:
+                    for row in rows:
+                        text_to_translate = row.get('label', '').strip()
+                        existing_translation = row.get(target_header, '').strip()
+
+                        if text_to_translate and not existing_translation:
+                            # Translate if source text exists and target is empty
+                            row[target_header] = translator.translate_text(
+                                text_to_translate, source_lang=source_lang, target_lang=target_lang
+                            )
+                            translated_count += 1
+                            time.sleep(1)  # Wait for 1 second to avoid rate limiting
+                        elif text_to_translate and existing_translation:
+                            skipped_count += 1
+
+                        writer.writerow(row)
+                        pbar.set_postfix({
+                            'translated': translated_count,
+                            'skipped': skipped_count
+                        })
+                        pbar.update(1)
+
+        except (Exception, KeyboardInterrupt) as e:
+            os.remove(temp_path)  # Clean up temp file on error
+            raise e
+
+        # On success, replace the original file with the new one
+        os.replace(temp_path, file_path)
+
+        return f"Translation complete. Translated: {translated_count}, Skipped: {skipped_count}."
 
 
 class DeepLTranslator:
     """Translator using DeepL API."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, pro_api: bool = False):
         """
         Initialize the DeepL translator.
 
         Args:
             api_key: DeepL API key.
+            pro_api: If True, use the Pro API endpoint. Defaults to False.
         """
         self.api_key = api_key
-        self.base_url = "https://api-free.deepl.com/v2/translate"
+        self.base_url = "https://api.deepl.com/v2/translate" if pro_api \
+            else "https://api-free.deepl.com/v2/translate"
 
     def translate_text(self, text: str, source_lang: str = 'EN', 
                       target_lang: str = 'DE') -> str:
@@ -281,6 +361,7 @@ class DeepLTranslator:
 
         Returns:
             Translated text.
+            
 
         Raises:
             TranslationError: If translation fails.
@@ -297,7 +378,7 @@ class DeepLTranslator:
                     'source_lang': source_lang,
                     'target_lang': target_lang
                 },
-                timeout=30
+                timeout=15
             )
 
             if response.status_code == 200:

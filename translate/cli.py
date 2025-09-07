@@ -3,18 +3,7 @@
 import argparse
 from .core import TranslationService
 from .config import Config
-from .exceptions import TranslationError
-
-
-def show_help() -> None:
-    """Print the help message."""
-    print("Drawio Translation Tool")
-    print("======================")
-    print("This tool helps you extract labels from .drawio files and translate them.")
-    print("\nAvailable commands:")
-    print("  extract_labels  - Extract labels from a .drawio file to CSV")
-    print("  translate_csv   - Translate a CSV file")
-    print("  help           - Show this help message")
+from .exceptions import ConfigurationError, TranslationError
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -29,18 +18,14 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s extract_labels diagram.drawio labels.csv
-  %(prog)s translate_csv labels.csv
-  %(prog)s help
+  %(prog)s extract_labels diagram.drawio labels.csv --target-lang de
+  %(prog)s translate labels.csv --source-lang en --target-lang de
         """
     )
 
     subparsers = parser.add_subparsers(
-        dest='command', help='Available commands'
+        dest='command', help='Available commands', required=True
     )
-
-    # Help command
-    subparsers.add_parser('help', help='Show help message')
 
     # Extract labels command
     extract_parser = subparsers.add_parser(
@@ -62,9 +47,9 @@ Examples:
     )
 
     # Translate CSV command
-    translate_parser = subparsers.add_parser(
-        'translate_csv',
-        help='Translate a CSV file'
+    translate_parser = subparsers.add_parser( # Renamed from translate_csv
+        'translate',
+        help='Translate a CSV file using DeepL, with progress bar'
     )
     translate_parser.add_argument(
         'csv_file',
@@ -90,10 +75,6 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        if args.command == 'help' or not args.command:
-            show_help()
-            return
-
         # Initialize configuration
         config = Config()
 
@@ -110,11 +91,11 @@ def main() -> None:
             result = service.extract_labels(args.drawio_file, args.csv_file)
             print(f"✓ {result}")
 
-        elif args.command == 'translate_csv':
+        elif args.command == 'translate':
             result = service.translate_csv(args.csv_file)
             print(f"✓ {result}")
 
-    except TranslationError as e:
+    except (TranslationError, ConfigurationError) as e:
         print(f"✗ Error: {e}")
         exit(1)
     except KeyboardInterrupt:

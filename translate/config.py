@@ -34,7 +34,7 @@ class Config:
     @property
     def deepl_api_key(self) -> Optional[str]:
         """Get the DeepL API key."""
-        return os.getenv('deepl_api')
+        return os.getenv('DEEPL_API_KEY')
 
     def set_target_language(self, language: str) -> None:
         """

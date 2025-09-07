@@ -1,14 +1,12 @@
 import unittest
-from unittest.mock import patch
-from io import StringIO
+from unittest.mock import patch, Mock
 import os
 import csv
 import tempfile
 
-from ..core import DrawioParser, LabelCsvWriter, TranslationService
+from ..core import DrawioParser, LabelCsvWriter, TranslationService, DeepLTranslator
 from ..config import Config
-from ..exceptions import DrawioParseError, ConfigurationError
-from .. import extract_labels, translate_csv, show_help
+from ..exceptions import DrawioParseError, ConfigurationError, TranslationError
 import unittest.mock
 
 
@@ -95,7 +93,7 @@ class TestDeepLTranslation(unittest.TestCase):
     @unittest.mock.patch('requests.post')
     def test_deepl_translation_success(self, mock_post):
         """Test successful DeepL translation."""
-        # Mock the DeepL API response
+        # Mock the requests.post call
         mock_response = unittest.mock.Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
@@ -108,9 +106,6 @@ class TestDeepLTranslation(unittest.TestCase):
         }
         mock_post.return_value = mock_response
 
-        # Import here to avoid import errors if deepl module doesn't exist
-        from ..core import DeepLTranslator
-        
         translator = DeepLTranslator(self.api_key)
         result = translator.translate_text(
             self.test_text, 
@@ -124,7 +119,7 @@ class TestDeepLTranslation(unittest.TestCase):
     @unittest.mock.patch('requests.post')
     def test_deepl_translation_api_error(self, mock_post):
         """Test DeepL translation with API error."""
-        # Mock API error response
+        # Mock an API error response (e.g., 403 Forbidden)
         mock_response = unittest.mock.Mock()
         mock_response.status_code = 403
         mock_response.json.return_value = {
@@ -132,9 +127,6 @@ class TestDeepLTranslation(unittest.TestCase):
         }
         mock_post.return_value = mock_response
 
-        from ..core import DeepLTranslator
-        from ..exceptions import TranslationError
-        
         translator = DeepLTranslator(self.api_key)
         
         with self.assertRaises(TranslationError):
@@ -147,12 +139,9 @@ class TestDeepLTranslation(unittest.TestCase):
     @unittest.mock.patch('requests.post')
     def test_deepl_translation_network_error(self, mock_post):
         """Test DeepL translation with network error."""
-        # Mock network error
+        # Mock a network-level error
         mock_post.side_effect = Exception("Network error")
 
-        from ..core import DeepLTranslator
-        from ..exceptions import TranslationError
-        
         translator = DeepLTranslator(self.api_key)
         
         with self.assertRaises(TranslationError):
@@ -251,46 +240,64 @@ class TestTranslationService(unittest.TestCase):
         self.assertIn("Extracted labels", result)
         self.assertTrue(os.path.exists(self.csv_file))
 
-    def test_translate_csv(self):
-        """Test translating CSV."""
-        result = self.service.translate_csv(self.csv_file)
-        self.assertIn("Translating", result)
+    @patch('translate.core.tqdm')
+    @patch('translate.core.DeepLTranslator')
+    def test_translate_csv_with_skips(self, MockDeepLTranslator, _mock_tqdm):
+        """Test CSV translation, including skipping existing translations."""
+        # Setup mock translator
+        mock_translator_instance = MockDeepLTranslator.return_value
+        mock_translator_instance.translate_text.side_effect = ["Hallo Welt", "Ein weiteres Label"]
 
-
-class TestConvenienceFunctions(unittest.TestCase):
-    """Test cases for convenience functions."""
-
-    def setUp(self):
-        self.drawio_file = os.path.join(
-            os.path.dirname(__file__), 'test_resources', 'text.drawio'
+        # Create a dummy CSV file with one existing translation
+        csv_content = (
+            "id,label,label_de\n"
+            "1,Hello World,\n"  # To be translated
+            "2,Already translated,Bereits übersetzt\n"  # To be skipped
+            "3,Another Label,\n"  # To be translated
+            "4,No Label,"  # To be ignored
         )
-        self.temp_file = tempfile.NamedTemporaryFile(
-            mode='w', delete=False, suffix='.csv'
-        )
-        self.temp_file.close()
-        self.csv_file = self.temp_file.name
+        with open(self.csv_file, 'w', encoding='utf-8', newline='') as f:
+            f.write(csv_content)
 
-    def tearDown(self):
-        if os.path.exists(self.csv_file):
-            os.remove(self.csv_file)
+        # Patch config properties for this test
+        with patch.object(self.config, 'deepl_api_key', 'fake-key'), \
+             patch.object(self.config, 'source_language', 'en'), \
+             patch.object(self.config, 'target_language', 'de'):
+            # Run the service
+            result = self.service.translate_csv(self.csv_file)
+            self.assertEqual(result, "Translation complete. Translated: 2, Skipped: 1.")
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_show_help(self, mock_stdout):
-        """Test show_help function."""
-        show_help()
-        output = mock_stdout.getvalue()
-        self.assertIn("Drawio Translation Tool", output)
+            # Verify the translation call
+            MockDeepLTranslator.assert_called_once_with('fake-key')
+            self.assertEqual(mock_translator_instance.translate_text.call_count, 2)
+            mock_translator_instance.translate_text.assert_any_call(
+                "Hello World", source_lang='en', target_lang='de'
+            )
+            mock_translator_instance.translate_text.assert_any_call(
+                "Another Label", source_lang='en', target_lang='de'
+            )
 
-    def test_extract_labels_function(self):
-        """Test extract_labels convenience function."""
-        result = extract_labels(self.drawio_file, self.csv_file, 'de')
-        self.assertIn("Extracted labels", result)
-        self.assertTrue(os.path.exists(self.csv_file))
+            # Check the content of the updated CSV file
+            with open(self.csv_file, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                self.assertEqual(len(rows), 4)
 
-    def test_translate_csv_function(self):
-        """Test translate_csv convenience function."""
-        result = translate_csv(self.csv_file, 'en', 'de')
-        self.assertIn("Translating", result)
+                # Row 1: was translated
+                self.assertEqual(rows[0]['label_de'], 'Hallo Welt')
+                # Row 2: was skipped
+                self.assertEqual(rows[1]['label_de'], 'Bereits übersetzt')
+                # Row 3: was translated
+                self.assertEqual(rows[2]['label_de'], 'Ein weiteres Label')
+                # Row 4: was ignored
+                self.assertEqual(rows[3]['label_de'], '')
+
+    def test_translate_csv_no_api_key(self):
+        """Test translating CSV when API key is missing."""
+        # Ensure the API key is not set for this test
+        with patch.object(self.config, 'deepl_api_key', None):
+            with self.assertRaisesRegex(ConfigurationError, "DeepL API key not found"):
+                self.service.translate_csv(self.csv_file)
 
 
 if __name__ == '__main__':
